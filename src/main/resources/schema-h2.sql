@@ -1,32 +1,33 @@
-DROP TABLE PERSON;
+DROP TABLE employee;
 
-CREATE TABLE PERSON (
+CREATE TABLE employee (
   ID NUMBER(10,0) NOT NULL AUTO_INCREMENT,
-  FIRST_NAME VARCHAR2(255) NOT NULL DEFAULT '',
-  LAST_NAME VARCHAR2(255) NOT NULL DEFAULT '',
-  MOBILE VARCHAR2(20) NOT NULL DEFAULT '',
-  BIRTHDAY DATE DEFAULT NULL,
+  fname VARCHAR2(255) NOT NULL DEFAULT '',
+  lname VARCHAR2(255) NOT NULL DEFAULT '',
+  title VARCHAR2(20) NOT NULL DEFAULT '',
+  phone_number VARCHAR2(20) DEFAULT '',
+  email VARCHAR2(255) NOT NULL DEFAULT '',
+  hire_date VARCHAR2(20)  DEFAULT '',
+  manager_id number(10,0),
+  department_number number(10,0),
   PRIMARY KEY (ID));
 
-DROP TABLE HOME;
+DROP TABLE department;
 
-CREATE TABLE HOME (
-  ID NUMBER(10,0) NOT NULL AUTO_INCREMENT,
-  ADDRESS VARCHAR2(255) not null default '',
-  HOMENUMBER varchar2(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (ID)
+CREATE TABLE department (
+  department_Id NUMBER(10,0) NOT NULL AUTO_INCREMENT,
+  name VARCHAR2(255) not null default '',
+  manager_id number (10,0),
+  PRIMARY KEY (department_Id)
 );
 
+DROP TABLE department_employee;
 
-DROP TABLE CAR;
-
-CREATE TABLE CAR (
-  ID NUMBER(10,0) NOT NULL AUTO_INCREMENT,
-  MAKE VARCHAR2(255) not null default '',
-  MODEL varchar2(255) NOT NULL DEFAULT '',
-  YEAR VARCHAR2(5) NOT NULL DEFAULT '01907',
-  PRIMARY KEY (ID)
+CREATE TABLE department_employee (
+  department_Id NUMBER(10,0) NOT NULL,
+  employee_id NUMBER(10,0) not null
 );
+
 
 DROP SEQUENCE hibernate_sequence;
 
