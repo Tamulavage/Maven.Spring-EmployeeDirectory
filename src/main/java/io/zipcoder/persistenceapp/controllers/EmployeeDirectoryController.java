@@ -4,7 +4,6 @@ import io.zipcoder.persistenceapp.Entities.Department;
 import io.zipcoder.persistenceapp.Entities.Employee;
 import io.zipcoder.persistenceapp.repository.DepartmentRepository;
 import io.zipcoder.persistenceapp.repository.EmployeeRepository;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,51 +82,56 @@ public class EmployeeDirectoryController {
 
     @GetMapping("/Employees/{mgrId}")
     public ResponseEntity<List<Employee>> getEmployeesByMgr(@PathVariable int mgrId) {
-        Iterable<Employee> employees = employeeRepository.findAll();
-        List<Employee> retVal = new ArrayList<>();
-        for (Employee ele : employees) {
-            if (mgrId == ele.getManagerId()) {
-                retVal.add(ele);
-            }
-        }
-        return new ResponseEntity<>(retVal, HttpStatus.OK);
+        return new ResponseEntity<>(employeeRepository.findEmployeesByManagerId(mgrId), HttpStatus.OK);
     }
 
 
-    // todo
     @GetMapping("/Hierarchy/{id}")
     public ResponseEntity<List<Employee>> getHierarchy(@PathVariable int id) {
-        return null;
+        List<Employee> employees = employeeRepository.findEmployeesByManagerId(id);
+        if (employees != null) {
+            employees.addAll(getSuborinates(employees));
+        }
+
+        return new ResponseEntity<>(employees, HttpStatus.OK);
     }
 
-    // todo
+    private List<Employee> getSuborinates(List<Employee> employees) {
+        List<Employee> retVal = new ArrayList<>();
+
+        for (Employee ele : employees) {
+            retVal.addAll(employeeRepository.findEmployeesByManagerId(ele.getManagerId()));
+        }
+
+        return retVal;
+    }
+
     @GetMapping("/ReverseHierarchy/{id}")
     public ResponseEntity<List<Employee>> getReverseHierarchy(@PathVariable int id) {
-        return null;
+
+        Employee employee = employeeRepository.findOne(id);
+        List<Employee> retVal = new ArrayList<>();
+        if (employee != null) {
+            retVal.add(employee);
+            while (employee.getManagerId() != null) {
+                employee = employeeRepository.findOne(employee.getId());
+                retVal.add(employee);
+            }
+        }
+
+        return new ResponseEntity<>(retVal, HttpStatus.OK);
     }
 
     @GetMapping("/Employees/")
     public ResponseEntity<List<Employee>> getEmployeesWithoutManager() {
-        Iterable<Employee> employees = employeeRepository.findAll();
-        List<Employee> retVal = new ArrayList<>();
-        for (Employee ele : employees) {
-            if (ele.getManagerId() == null) {
-                retVal.add(ele);
-            }
-        }
-        return new ResponseEntity<>(retVal, HttpStatus.OK);
+
+        return new ResponseEntity<>(employeeRepository.findEmployeesByManagerId(null), HttpStatus.OK);
     }
 
     @GetMapping("/Employees/dept/{deptId}")
     public ResponseEntity<List<Employee>> getEmployeesByDept(@PathVariable int deptId) {
-        Iterable<Employee> employees = employeeRepository.findAll();
-        List<Employee> retVal = new ArrayList<>();
-        for (Employee ele : employees) {
-            if (deptId == ele.getDepartmentNumber()) {
-                retVal.add(ele);
-            }
-        }
-        return new ResponseEntity<>(retVal, HttpStatus.OK);
+
+        return new ResponseEntity<>(employeeRepository.findEmployeesByDepartmentNumber(deptId), HttpStatus.OK);
     }
 
     @DeleteMapping("/Employee/{id}")
@@ -136,22 +140,43 @@ public class EmployeeDirectoryController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    // todo
     @DeleteMapping("/Employees/{mgrId}")
     public ResponseEntity<Employee> deleteEmployeesFromManager(@PathVariable Integer mgrId) {
-        return null;
+        List<Employee> employees = employeeRepository.findEmployeesByManagerId(mgrId);
+        if (employees != null) {
+            employees.addAll(getSuborinates(employees));
+        }
+        if (employees != null) {
+            employees.forEach(employee -> employeeRepository.delete(employee.getId()));
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    // todo
     @DeleteMapping("/Employees/RemoveMgr/{mgrId}")
     public ResponseEntity<Employee> deleteManager(@PathVariable Integer mgrId) {
-        return null;
+        Employee oldManager = employeeRepository.findOne(mgrId);
+        List<Employee> employees = employeeRepository.findEmployeesByManagerId(mgrId);
+        employees.forEach(employee -> employee.setManagerId(oldManager.getManagerId()));
+        employeeRepository.save(employees);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    // todo
-    @PutMapping("/DepartmentMerge/{deptIdMergedFrom}/{deptIdMergedTo}")
+    @PutMapping("/DepartmentMerge/{deptIdMergedFrom}/to/{deptIdMergedTo}")
     public ResponseEntity<Department> mergeDepartments(@PathVariable Integer deptIdMergedFrom, @PathVariable Integer deptIdMergedTo) {
-        return null;
+        List<Employee> employees = employeeRepository.findEmployeesByDepartmentNumber(deptIdMergedFrom);
+        employees.forEach(employee -> employee.setDepartmentNumber(deptIdMergedTo));
+
+        Department oldDept = departmentRepository.findOne(deptIdMergedFrom);
+        Employee oldManager = employeeRepository.findOne(oldDept.getManagerId());
+        Department newDept = departmentRepository.findOne(deptIdMergedTo);
+        oldManager.setManagerId(newDept.getManagerId());
+
+        employeeRepository.save(employees);
+        employeeRepository.save(oldManager);
+
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

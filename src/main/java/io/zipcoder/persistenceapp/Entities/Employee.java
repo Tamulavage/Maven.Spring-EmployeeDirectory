@@ -9,7 +9,7 @@ import javax.persistence.Id;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String fname;
     private String lname;
@@ -21,6 +21,18 @@ public class Employee {
     private Integer departmentNumber;
 
     public Employee() {
+    }
+
+    public Employee(Integer id,String fname, String lname, String title, String phoneNumber, String email, String hireDate, Integer managerId, Integer departmentNumber){
+        this.id = id;
+        this.fname = fname;
+        this.lname = lname;
+        this.title = title;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.hireDate = hireDate;
+        this.managerId = managerId;
+        this.departmentNumber = departmentNumber;
     }
 
     public Integer getId() {
