@@ -1,15 +1,16 @@
-package io.zipcoder.persistenceapp.Entities;
+package io.zipcoder.persistenceapp.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.Objects;
 
 @Entity
 public class Employee {
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String fname;
     private String lname;
@@ -106,4 +107,17 @@ public class Employee {
     public void setDepartmentNumber(Integer departmentNumber) {
         this.departmentNumber = departmentNumber;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return Objects.equals(id, employee.id) &&
+                Objects.equals(fname, employee.fname) &&
+                Objects.equals(lname, employee.lname) &&
+                Objects.equals(phoneNumber, employee.phoneNumber);
+    }
+
+
 }
